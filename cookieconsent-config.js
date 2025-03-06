@@ -46,6 +46,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const btn = document.getElementById('show-preferencesModal');
     if (btn) {
         btn.addEventListener('click', function() {
+            event.preventDefault();
+            event.stopPropagation();
             CookieConsent.showPreferences();
         });
     }
