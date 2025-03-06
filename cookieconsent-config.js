@@ -43,6 +43,12 @@ function updateGtagConsent() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('show-preferencesModal');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            CookieConsent.showPreferences();
+        });
+    }
     /**
     * All config. options available here:
     * https://cookieconsent.orestbida.com/reference/configuration-reference.html
