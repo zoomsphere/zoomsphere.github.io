@@ -72,6 +72,19 @@ document.addEventListener('DOMContentLoaded', function () {
             [CAT_NECESSARY]: {
                 enabled: true,  // this category is enabled by default
                 readOnly: true,  // this category cannot be disabled
+                autoClear: {
+                    cookies: [
+                        {
+                            name: 'intercom-device-id-xn43bho3',
+                        },
+                        {
+                            name: 'intercom-id-xn43bho3',
+                        },
+                        {
+                            name: 'intercom-session-xn43bho3',
+                        }
+                    ]
+                },
                 services: {
                     'cc_cookie': {
                         label: 'Saves your cookie consent settings.',
@@ -153,15 +166,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         },
                         {
                             name: 'hubspotutk',
-                        },
-                        {
-                            name: 'intercom-device-id-xn43bho3',
-                        },
-                        {
-                            name: 'intercom-id-xn43bho3',
-                        },
-                        {
-                            name: 'intercom-session-xn43bho3',
                         }
                     ]
                 },
@@ -246,6 +250,24 @@ document.addEventListener('DOMContentLoaded', function () {
                                             domain: "Service",
                                             description: "Stores your user session",
                                             expiration: "14 months"
+                                        },
+                                        {
+                                            name: "intercom-device-id-xn43bho3",
+                                            domain: "Intercom",
+                                            description: "Uniquely identifies a device across visits to your website",
+                                            expiration: "9 months"
+                                        },
+                                        {
+                                            name: "intercom-id-xn43bho3",
+                                            domain: "Intercom",
+                                            description: "Anonymous visitor identifier cookie",
+                                            expiration: "9 months"
+                                        },
+                                        {
+                                            name: "intercom-session-xn43bho3",
+                                            domain: "Intercom",
+                                            description: "Identifies a session of your website",
+                                            expiration: "7 days"
                                         }
                                     ]
                                 }
@@ -345,24 +367,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                             domain: "HubSpot",
                                             description: "Used to keep track of a visitor's identity. Passed to HubSpot on form submission to associate with a contact",
                                             expiration: "6 months"
-                                        },
-                                        {
-                                            name: "intercom-device-id-xn43bho3",
-                                            domain: "Intercom",
-                                            description: "Uniquely identifies a device across visits to your website",
-                                            expiration: "9 months"
-                                        },
-                                        {
-                                            name: "intercom-id-xn43bho3",
-                                            domain: "Intercom",
-                                            description: "Anonymous visitor identifier cookie",
-                                            expiration: "9 months"
-                                        },
-                                        {
-                                            name: "intercom-session-xn43bho3",
-                                            domain: "Intercom",
-                                            description: "Identifies a session of your website",
-                                            expiration: "7 days"
                                         }
                                     ]
                                 }
