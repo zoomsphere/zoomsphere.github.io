@@ -67,6 +67,14 @@ document.addEventListener('DOMContentLoaded', function () {
             updateGtagConsent();
         },
 
+        cookie: {
+            name: 'cc_cookie',
+            domain: '.zoomsphere.com',
+            path: '/',
+            sameSite: 'Lax',
+            expiresAfterDays: 3650,
+        },
+
         // Configure categories and services
         categories: {
             [CAT_NECESSARY]: {
