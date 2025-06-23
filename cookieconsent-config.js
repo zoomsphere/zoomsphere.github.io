@@ -31,6 +31,7 @@ gtag('consent', 'default', {
  * Update gtag consent according to the users choices made in CookieConsent UI
  */
 function updateGtagConsent(sendEvent = false) {
+    console.log('updateGtagConsent called, sendEvent:', sendEvent);
     gtag('consent', 'update', {
         [SERVICE_ANALYTICS_STORAGE]: CookieConsent.acceptedService(SERVICE_ANALYTICS_STORAGE, CAT_ANALYTICS) ? 'granted' : 'denied',
         [SERVICE_AD_STORAGE]: CookieConsent.acceptedService(SERVICE_AD_STORAGE, CAT_ADVERTISEMENT) ? 'granted' : 'denied',
@@ -45,7 +46,6 @@ function updateGtagConsent(sendEvent = false) {
             SERVICE_ANALYTICS_STORAGE,
             CAT_ANALYTICS
         );
-        console.log('analyticsApproved', analyticsApproved);
         if (analyticsApproved && window.dataLayer) {
             window.dataLayer.push({
                 "event": "Cookie Consent Approval",
@@ -74,12 +74,15 @@ document.addEventListener('DOMContentLoaded', function () {
     CookieConsent.run({
         // Trigger consent update when user choices change
         onFirstConsent: () => {
+            console.log('CookieConsent: onFirstConsent');
             updateGtagConsent();
         },
         onConsent: () => {
+            console.log('CookieConsent: onConsent');
             updateGtagConsent(true);
         },
         onChange: () => {
+            console.log('CookieConsent: onChange');
             updateGtagConsent();
         },
 
