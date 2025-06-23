@@ -30,8 +30,8 @@ gtag('consent', 'default', {
 /** 
  * Update gtag consent according to the users choices made in CookieConsent UI
  */
-function updateGtagConsent() {
-    const d = gtag('consent', 'update', {
+function updateGtagConsent(sendEvent = false) {
+    gtag('consent', 'update', {
         [SERVICE_ANALYTICS_STORAGE]: CookieConsent.acceptedService(SERVICE_ANALYTICS_STORAGE, CAT_ANALYTICS) ? 'granted' : 'denied',
         [SERVICE_AD_STORAGE]: CookieConsent.acceptedService(SERVICE_AD_STORAGE, CAT_ADVERTISEMENT) ? 'granted' : 'denied',
         [SERVICE_AD_USER_DATA]: CookieConsent.acceptedService(SERVICE_AD_USER_DATA, CAT_ADVERTISEMENT) ? 'granted' : 'denied',
@@ -40,6 +40,21 @@ function updateGtagConsent() {
         [SERVICE_PERSONALIZATION_STORAGE]: CookieConsent.acceptedService(SERVICE_PERSONALIZATION_STORAGE, CAT_FUNCTIONALITY) ? 'granted' : 'denied',
         [SERVICE_SECURITY_STORAGE]: 'granted',
     });
+    if (sendEvent) {
+        const analyticsApproved = CookieConsent.acceptedService(
+            SERVICE_ANALYTICS_STORAGE,
+            CAT_ANALYTICS
+        );
+        if (analyticsApproved && window.dataLayer) {
+            window.dataLayer.push({
+                "event": "Cookie Consent Approval",
+                "eventCategory": "Homepage",
+                "eventAction": "Submit",
+                "eventLabel": null,
+                "eventValue": null
+            });
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -61,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateGtagConsent();
         },
         onConsent: () => {
-            updateGtagConsent();
+            updateGtagConsent(true);
         },
         onChange: () => {
             updateGtagConsent();
