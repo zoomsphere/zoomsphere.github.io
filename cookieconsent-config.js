@@ -46,11 +46,11 @@ function updateGtagConsent(sendEvent = false) {
             SERVICE_ANALYTICS_STORAGE,
             CAT_ANALYTICS
         );
-        if (analyticsApproved && window.dataLayer) {
+        if (window.dataLayer) {
             window.dataLayer.push({
                 "event": "Cookie Consent Approval",
                 "eventCategory": "Homepage",
-                "eventAction": "Submit",
+                "eventAction": analyticsApproved ? "Submit" : "Reject",
                 "eventLabel": null,
                 "eventValue": null
             });
