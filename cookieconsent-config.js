@@ -46,7 +46,6 @@ function updateGtagConsent(sendEvent = false) {
             CAT_ANALYTICS
         );
         if (window.dataLayer) {
-            console.log( (analyticsApproved ? "Submit" : "Reject"))
             window.dataLayer.push({
                 "event": "Cookie Consent Approval",
                 "eventCategory": "Homepage",
