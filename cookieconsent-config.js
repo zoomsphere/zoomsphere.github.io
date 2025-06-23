@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         onChange: () => {
             console.log('CookieConsent: onChange');
-            updateGtagConsent();
+            updateGtagConsent(true);
         },
 
         cookie: {
