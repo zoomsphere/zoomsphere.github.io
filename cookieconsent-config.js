@@ -27,6 +27,51 @@ gtag('consent', 'default', {
     [SERVICE_SECURITY_STORAGE]: 'granted',
 });
 
+/**
+ * Opt-out regions: visitors who have not made any choice yet are measured right away.
+ * Country comes from Cloudflare (/cdn-cgi/trace on our own domain, no third party).
+ * Everyone else (EU/EEA, UK, CH, CA incl. Quebec, unknown) keeps opt-in: nothing fires before Accept.
+ */
+const OPT_OUT_COUNTRIES = ['US', 'AU', 'NZ'];
+let regionDefaultApplied = false;
+
+// Start the lookup now (this script runs in <head>), so the country is usually known by DOMContentLoaded
+const visitorCountry = fetch('/cdn-cgi/trace', { cache: 'no-store' })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+        const m = t.match(/^loc=([A-Z]{2})$/m);
+        return m ? m[1] : null;
+    })
+    .catch(function () { return null; }); // unknown country: stay opt-in
+
+function applyRegionDefault() {
+    if (navigator.globalPrivacyControl) return; // GPC is a legal opt-out signal (CCPA): never override it
+    // Same bot check as CookieConsent (hideFromBots): JS crawlers from US IPs (Googlebot) must not fire Meta/GA4
+    if (/bot|crawl|spider|slurp|teoma/i.test(navigator.userAgent) || navigator.webdriver) return;
+    visitorCountry.then(function (country) {
+        if (!country || OPT_OUT_COUNTRIES.indexOf(country) === -1) return;
+        if (CookieConsent.validConsent()) return; // user already chose: respect it
+        regionDefaultApplied = true;
+        gtag('consent', 'update', {
+            [SERVICE_ANALYTICS_STORAGE]: 'granted',
+            [SERVICE_AD_STORAGE]: 'granted',
+            [SERVICE_AD_USER_DATA]: 'granted',
+            [SERVICE_AD_PERSONALIZATION]: 'granted',
+            [SERVICE_FUNCTIONALITY_STORAGE]: 'granted',
+            [SERVICE_PERSONALIZATION_STORAGE]: 'granted',
+            [SERVICE_SECURITY_STORAGE]: 'granted',
+        });
+        // Same event the banner pushes, so existing GTM triggers (Meta, GA4, LinkedIn) fire without GTM changes
+        window.dataLayer.push({
+            "event": "Cookie Consent Approval",
+            "eventCategory": "Homepage",
+            "eventAction": "RegionDefault",
+            "eventLabel": country,
+            "eventValue": null
+        });
+    });
+}
+
 /** 
  * Update gtag consent according to the users choices made in CookieConsent UI
  */
@@ -45,7 +90,9 @@ function updateGtagConsent(sendEvent = false) {
             SERVICE_ANALYTICS_STORAGE,
             CAT_ANALYTICS
         );
-        if (window.dataLayer) {
+        // Region default already pushed the Approval event on this page: pushing it again
+        // after Accept would fire Meta PageView and GA4 twice. Reject is still pushed.
+        if (window.dataLayer && !(regionDefaultApplied && analyticsApproved)) {
             window.dataLayer.push({
                 "event": "Cookie Consent Approval",
                 "eventCategory": "Homepage",
@@ -205,8 +252,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         guiOptions: {
             consentModal: {
-                layout: 'box wide',
-                position: 'bottom left',
+                // Slim bar at the bottom: does not cover the hero CTA on mobile
+                layout: 'bar inline',
+                position: 'bottom',
                 equalWeightButtons: false,
                 flipButtons: true
             },
@@ -223,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 en: {
                     consentModal: {
                         title: 'Cookie consent',
-                        description: 'This website uses cookies that help the website to function and also to track how you interact with our website. But for us to provide the best user experience, enable the specific cookies from Settings, and click on Accept.',
+                        description: 'We use cookies to run the site and to measure our ads. You can change this anytime in Preferences.',
                         acceptAllBtn: 'Accept All',
                         acceptNecessaryBtn: 'Reject All',
                         showPreferencesBtn: 'Preferences'
@@ -239,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 title: 'Cookie usage',
                                 description: `This website uses cookies to improve your experience while you navigate through the website. Out of these cookies, the cookies that are categorized as necessary are stored on your browser as they as essential for the working of basic functionalities of the website.
 
-                                            We also use third-party cookies that help us analyze and understand how you use this website, to store user preferences and provide them with content and advertisements that are relevant to you. These cookies will only be stored on your browser with your consent to do so. You also have the option to opt-out of these cookies.But opting out of some of these cookies may have an effect on your browsing experience.`,
+                                            We also use third-party cookies that help us analyze and understand how you use this website, to store user preferences and provide them with content and advertisements that are relevant to you. Depending on your location, these cookies are stored either only with your consent, or by default until you opt out. You can change your choice at any time. But opting out of some of these cookies may have an effect on your browsing experience.`,
                             },
                             {
                                 title: 'Strictly Necessary cookies',
@@ -409,4 +457,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // After run(): validConsent() already reflects the stored choice
+    applyRegionDefault();
 });
