@@ -70,6 +70,44 @@ document.addEventListener('DOMContentLoaded', function () {
     * All config. options available here:
     * https://cookieconsent.orestbida.com/reference/configuration-reference.html
     */
+    /**
+     * Opt-out regions: visitors who have not made any choice yet are measured right away.
+     * Country comes from Cloudflare (/cdn-cgi/trace on our own domain, no third party).
+     * Everyone else (EU/EEA, UK, CH, CA incl. Quebec, unknown) keeps opt-in: nothing fires before Accept.
+     */
+    const OPT_OUT_COUNTRIES = ['US', 'AU', 'NZ', 'AE'];
+    function applyRegionDefault() {
+        if (CookieConsent.validConsent()) return; // user already chose: respect it
+        fetch('/cdn-cgi/trace', { cache: 'no-store' })
+            .then(function (r) { return r.text(); })
+            .then(function (t) {
+                const m = t.match(/^loc=([A-Z]{2})$/m);
+                const country = m ? m[1] : null;
+                if (!country || OPT_OUT_COUNTRIES.indexOf(country) === -1) return;
+                if (CookieConsent.validConsent()) return; // chose in the meantime
+                gtag('consent', 'update', {
+                    [SERVICE_ANALYTICS_STORAGE]: 'granted',
+                    [SERVICE_AD_STORAGE]: 'granted',
+                    [SERVICE_AD_USER_DATA]: 'granted',
+                    [SERVICE_AD_PERSONALIZATION]: 'granted',
+                    [SERVICE_FUNCTIONALITY_STORAGE]: 'granted',
+                    [SERVICE_PERSONALIZATION_STORAGE]: 'granted',
+                    [SERVICE_SECURITY_STORAGE]: 'granted',
+                });
+                // Same event the banner pushes, so existing GTM triggers (Meta, GA4, LinkedIn) fire without GTM changes
+                window.dataLayer.push({
+                    "event": "Cookie Consent Approval",
+                    "eventCategory": "Homepage",
+                    "eventAction": "RegionDefault",
+                    "eventLabel": country,
+                    "eventValue": null
+                });
+            })
+            .catch(function () { /* unknown country: stay opt-in */ });
+    }
+
+    window.zsApplyRegionDefault = applyRegionDefault;
+
     CookieConsent.run({
         // Trigger consent update when user choices change
         onFirstConsent: () => {
@@ -205,8 +243,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         guiOptions: {
             consentModal: {
-                layout: 'box wide',
-                position: 'bottom left',
+                // Slim bar at the bottom: does not cover the hero CTA on mobile
+                layout: 'bar inline',
+                position: 'bottom',
                 equalWeightButtons: false,
                 flipButtons: true
             },
@@ -223,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 en: {
                     consentModal: {
                         title: 'Cookie consent',
-                        description: 'This website uses cookies that help the website to function and also to track how you interact with our website. But for us to provide the best user experience, enable the specific cookies from Settings, and click on Accept.',
+                        description: 'We use cookies to run the site and to measure our ads. You can change this anytime in Preferences.',
                         acceptAllBtn: 'Accept All',
                         acceptNecessaryBtn: 'Reject All',
                         showPreferencesBtn: 'Preferences'
@@ -409,4 +448,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // runs after CookieConsent.run() above (listeners fire in registration order)
+    if (window.zsApplyRegionDefault) window.zsApplyRegionDefault();
 });
