@@ -32,7 +32,7 @@ gtag('consent', 'default', {
  * Country comes from Cloudflare (/cdn-cgi/trace on our own domain, no third party).
  * Everyone else (EU/EEA, UK, CH, CA incl. Quebec, unknown) keeps opt-in: nothing fires before Accept.
  */
-const OPT_OUT_COUNTRIES = ['US', 'AU', 'NZ', 'AE'];
+const OPT_OUT_COUNTRIES = ['US', 'AU', 'NZ'];
 let regionDefaultApplied = false;
 
 // Start the lookup now (this script runs in <head>), so the country is usually known by DOMContentLoaded
